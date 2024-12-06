@@ -57,23 +57,23 @@ def in_game():
                 pygame.quit()
                 quit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and direction != "RIGHT":
-                    x_change =- snake_block
-                    y_change = 0
-                    direction = "LEFT"
-                elif event.key == pygame.K_RIGHT and direction != "LEFT":
-                    x_change =+ snake_block
-                    y_change = 0
-                    direction = "RIGHT"
-                elif event.key == pygame.K_UP and direction != "DOWN":
-                    y_change =- snake_block
-                    x_change = 0
-                    direction = "UP"
-                elif event.key == pygame.K_DOWN and direction != "UP":
-                    y_change =+ snake_block
-                    x_change = 0
-                    direction = "DOWN"
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT] and direction != "RIGHT":
+                x_change =- snake_block
+                y_change = 0
+                direction = "LEFT"
+            elif keys[pygame.K_RIGHT] and direction != "LEFT":
+                x_change =+ snake_block
+                y_change = 0
+                direction = "RIGHT"
+            elif keys[pygame.K_UP] and direction != "DOWN":
+                y_change =- snake_block
+                x_change = 0
+                direction = "UP"
+            elif keys[pygame.K_DOWN] and direction != "UP":
+                y_change =+ snake_block
+                x_change = 0
+                direction = "DOWN"
 
         snake_pos[0] += x_change
         snake_pos[1] += y_change

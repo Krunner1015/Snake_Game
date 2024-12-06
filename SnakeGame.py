@@ -13,7 +13,7 @@ snake = (76, 120, 232)
 width = 680
 height = 550
 snake_block = 34
-snake_speed = 15
+snake_speed = 10
 
 # Initialize window and start screen for game
 pygame.init()
@@ -35,8 +35,8 @@ def display_score(score):
     screen.blit(score_surf, score_rect)
 
 def draw_snake(snake_block, snake_list):
-    for x_pos in snake_list:
-        pygame.draw.rect(screen, snake, [x_pos[0], x_pos[1], snake_block, snake_block])
+    for pos in snake_list:
+        pygame.draw.rect(screen, snake, [pos[0], pos[1], snake_block, snake_block])
 
 def in_game():
     global snake_length
@@ -44,15 +44,38 @@ def in_game():
     game_over = False
     y_change = 0
     x_change = 0
-    snake_pos = [width / 2, height / 2]
+    snake_pos = [204, 278]
     snake_list = []
     snake_length = 1
-    apple_pos = [round(random.randrange(0, width - snake_block) / 10) * 10,
-                 round(random.randrange(0, height - snake_block) / 10) * 10]
+    apple_pos = [476, 278]
 
     while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                pygame.quit()
+                quit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    x_change =- snake_block
+                    y_change = 0
+                if event.key == pygame.K_RIGHT:
+                    x_change =+ snake_block
+                    y_change = 0
+                if event.key == pygame.K_UP:
+                    y_change =- snake_block
+                    x_change = 0
+                if event.key == pygame.K_DOWN:
+                    y_change =+ snake_block
+                    x_change = 0
+
+        snake_pos[0] += x_change
+        snake_pos[1] += y_change
+
         screen.fill(background)
         display_score(snake_length - 1)
+
         for row in range(15):
             for col in range(20):
                 if (row + col) % 2 == 0:
@@ -61,32 +84,8 @@ def in_game():
                     color = board_dark
                 pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over = True
-                pygame.quit()
+        screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    x_change = -snake_block
-                    y_change = 0
-                if event.key == pygame.K_RIGHT:
-                    x_change = -snake_block
-                    y_change = 0
-                if event.key == pygame.K_UP:
-                    x_change = -snake_block
-                    y_change = 0
-                if event.key == pygame.K_DOWN:
-                    x_change = -snake_block
-                    y_change = 0
-
-        if snake_pos[0] >= width or snake_pos[0] < 0 or snake_pos[1] >= height or snake_pos[1] < 0:
-            game_over = True
-
-        snake_pos[0] += x_change
-        snake_pos[1] += y_change
-
-        pygame.draw.rect(screen, snake, [apple_pos[0], apple_pos[1], snake_block, snake_block])
         snake_head = [snake_pos[0], snake_pos[1]]
         snake_list.append(snake_head)
 
@@ -96,15 +95,20 @@ def in_game():
         for x in snake_list[:-1]:
             if x == snake_head:
                 game_over = True
+                break
 
-        draw_snake(snake_block, snake_list)
-        display_score(snake_length - 1)
-
-        pygame.display.flip()
+        if width > snake_pos[0] >= 0 and height > snake_pos[1] >= 40:
+            draw_snake(snake_block, snake_list)
+        else:
+            break
 
         if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
-            apple_pos = [round(random.randrange(0, width - snake_block)/10)*10, round(random.randrange(0, height - snake_block)/10)*10]
+            apple_pos = [random.randint(0, (width // snake_block) - 1) * snake_block, random.randint(1, (height // snake_block) - 1) * snake_block]
+            while apple_pos in snake_list:
+                apple_pos = [random.randint(0, (width // snake_block) - 1) * snake_block, random.randint(1, (height // snake_block) - 1) * snake_block]
             snake_length += 1
+
+        pygame.display.flip()
 
         clock.tick(snake_speed)
     end_game()
@@ -129,7 +133,7 @@ def end_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return
+                quit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
@@ -138,13 +142,14 @@ def end_game():
 
                 if 330 < x < 640 and 410 < y < 460:
                     pygame.quit()
-                    return
+                    quit()
 
 while True:
     pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            quit()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos

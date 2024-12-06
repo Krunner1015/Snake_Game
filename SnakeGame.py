@@ -14,13 +14,6 @@ width = 680
 height = 550
 snake_block = 34
 snake_speed = 15
-y_change = 0
-x_change = 0
-snake_pos = [width/2, height/2]
-snake_list = []
-snake_length = 1
-apple_pos = [round(random.randrange(0, width - snake_block)/10)*10, round(random.randrange(0, height - snake_block)/10)*10]
-score = 0
 
 # Initialize window and start screen for game
 pygame.init()
@@ -43,16 +36,21 @@ def display_score(score):
 
 def draw_snake(snake_block, snake_list):
     for x_pos in snake_list:
-        pygame.draw.rect(screen, green, [x_pos[0], x_pos[1], snake_block, snake_block])
+        pygame.draw.rect(screen, snake, [x_pos[0], x_pos[1], snake_block, snake_block])
 
 def in_game():
-    global snake_pos, x_change, y_change, snake_length, snake_list, apple_pos, score
-    game_over = False
-    pygame.init()
+    global snake_length
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("Snake Game")
-    running = True
-    while running:
+    game_over = False
+    y_change = 0
+    x_change = 0
+    snake_pos = [width / 2, height / 2]
+    snake_list = []
+    snake_length = 1
+    apple_pos = [round(random.randrange(0, width - snake_block) / 10) * 10,
+                 round(random.randrange(0, height - snake_block) / 10) * 10]
+
+    while not game_over:
         screen.fill(background)
         display_score(snake_length - 1)
         for row in range(15):
@@ -61,17 +59,12 @@ def in_game():
                     color = board_light
                 else:
                     color = board_dark
-                pygame.draw.rect(screen, color, (col*34, 40+row*34, 34, 34))
-
-        while game_over:
-            screen.fill(white)
-            screen.blit(font.render("Game Over!", True, snake), [width/6, height/3])
-            display_score(snake_length - 1)
-            pygame.display.flip()
+                pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                game_over = True
+                pygame.quit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
@@ -94,9 +87,7 @@ def in_game():
         snake_pos[1] += y_change
 
         pygame.draw.rect(screen, snake, [apple_pos[0], apple_pos[1], snake_block, snake_block])
-        snake_head = []
-        snake_head.append(snake_pos[0])
-        snake_head.append(snake_pos[1])
+        snake_head = [snake_pos[0], snake_pos[1]]
         snake_list.append(snake_head)
 
         if len(snake_list) > snake_length:
@@ -116,11 +107,41 @@ def in_game():
             snake_length += 1
 
         clock.tick(snake_speed)
+    end_game()
 
-    pygame.quit()
-    quit()
+def end_game():
+    font = pygame.font.SysFont(None, 40)
+    screen = pygame.display.set_mode((650, 470))
+    screen.fill(board_light)
+    screen.blit(pygame.image.load("Snake.png"), (0, 0))
+    pygame.draw.rect(screen, snake, [10, 410, 310, 50], 0, 5)
+    play_surf = font.render("Play again!", True, white)
+    screen.blit(play_surf, play_surf.get_rect(center=(165, 435)))
+    pygame.draw.rect(screen, snake, [330, 410, 310, 50], 0, 5)
+    exit_surf = font.render("Exit", True, white)
+    screen.blit(exit_surf, exit_surf.get_rect(center=(485, 435)))
+    display_score(snake_length - 1)
+    font = pygame.font.SysFont(None, 80)
+    screen.blit(font.render("Game Over!", True, snake), (160, 60))
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 10 < x < 320 and 410 < y < 460:
+                    in_game()
+
+                if 330 < x < 640 and 410 < y < 460:
+                    pygame.quit()
+                    return
 
 while True:
+    pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -129,5 +150,3 @@ while True:
             x, y = event.pos
             if 10 < x < 678 and 270 < y < 320:
                 in_game()
-
-    pygame.display.flip()

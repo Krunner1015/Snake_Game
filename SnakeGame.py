@@ -48,6 +48,7 @@ def in_game():
     snake_list = []
     snake_length = 1
     apple_pos = [476, 278]
+    direction = "RIGHT"
 
     while not game_over:
         for event in pygame.event.get():
@@ -57,18 +58,22 @@ def in_game():
                 quit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_LEFT and direction != "RIGHT":
                     x_change =- snake_block
                     y_change = 0
-                if event.key == pygame.K_RIGHT:
+                    direction = "LEFT"
+                elif event.key == pygame.K_RIGHT and direction != "LEFT":
                     x_change =+ snake_block
                     y_change = 0
-                if event.key == pygame.K_UP:
+                    direction = "RIGHT"
+                elif event.key == pygame.K_UP and direction != "DOWN":
                     y_change =- snake_block
                     x_change = 0
-                if event.key == pygame.K_DOWN:
+                    direction = "UP"
+                elif event.key == pygame.K_DOWN and direction != "UP":
                     y_change =+ snake_block
                     x_change = 0
+                    direction = "DOWN"
 
         snake_pos[0] += x_change
         snake_pos[1] += y_change
@@ -103,9 +108,12 @@ def in_game():
             break
 
         if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
-            apple_pos = [random.randint(0, (width // snake_block) - 1) * snake_block, random.randint(1, (height // snake_block) - 1) * snake_block]
+            apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
+            # for i in range(0, len(snake_list), 2):
+            #     if apple_pos[0] == snake_list[i][0] and apple_pos[1] == snake_list[i][1]:
+            #         apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
             while apple_pos in snake_list:
-                apple_pos = [random.randint(0, (width // snake_block) - 1) * snake_block, random.randint(1, (height // snake_block) - 1) * snake_block]
+                apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
             snake_length += 1
 
         pygame.display.flip()
@@ -126,7 +134,7 @@ def end_game():
     screen.blit(exit_surf, exit_surf.get_rect(center=(485, 435)))
     display_score(snake_length - 1)
     font = pygame.font.SysFont(None, 80)
-    screen.blit(font.render("Game Over!", True, snake), (160, 60))
+    screen.blit(font.render("Game Over!", True, white), (160, 60))
     pygame.display.flip()
 
     while True:

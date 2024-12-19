@@ -29,11 +29,13 @@ screen.blit(play_surf, play_surf.get_rect(center=(344, 295)))
 # Initialize clock for speed control of snake
 clock = pygame.time.Clock()
 
+#displays the score in the top left of the screen
 def display_score(score):
     score_surf = font.render(f"Your Score: {score}", True, white)
     score_rect = score_surf.get_rect(topleft=(10, 10))
     screen.blit(score_surf, score_rect)
 
+#displays the snake on the screen
 def draw_snake(snake_block, snake_list):
     for pos in snake_list:
         pygame.draw.rect(screen, snake, [pos[0], pos[1], snake_block, snake_block])
@@ -50,6 +52,7 @@ def in_game():
     apple_pos = [476, 278]
     direction = "RIGHT"
 
+    #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -75,12 +78,15 @@ def in_game():
                 x_change = 0
                 direction = "DOWN"
 
+        #moves the snake according the key presses defined above
         snake_pos[0] += x_change
         snake_pos[1] += y_change
 
+        #reinitiates the screen
         screen.fill(background)
         display_score(snake_length - 1)
 
+        #draws the checkered board
         for row in range(15):
             for col in range(20):
                 if (row + col) % 2 == 0:
@@ -89,38 +95,46 @@ def in_game():
                     color = board_dark
                 pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
 
+
+        # for x in range(len(snake_list)):
+        #     if snake_list[x][0] == apple_pos[0] and snake_list[x][1] == apple_pos[1]:
+        #         apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
+
+        #displays the apple on the screen
         screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
 
+        #adjusts snake list for new position
         snake_head = [snake_pos[0], snake_pos[1]]
         snake_list.append(snake_head)
 
+        #removes the duplicate snake positions if the snake has not increased in size
         if len(snake_list) > snake_length:
             del snake_list[0]
 
+        #ends game if snake collides with itself
         for x in snake_list[:-1]:
             if x == snake_head:
                 game_over = True
                 break
 
+        #only displays the snake if it is within the board, otherwise the game ends (if the snake crashes into a wall)
         if width > snake_pos[0] >= 0 and height > snake_pos[1] >= 40:
             draw_snake(snake_block, snake_list)
         else:
             break
 
+        #increases the length of the snake and generates a new apple location when snake eats the apple
         if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
             apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
-            # for i in range(0, len(snake_list), 2):
-            #     if apple_pos[0] == snake_list[i][0] and apple_pos[1] == snake_list[i][1]:
-            #         apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
-            while apple_pos in snake_list:
-                apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
             snake_length += 1
 
         pygame.display.flip()
 
         clock.tick(snake_speed)
-    end_game()
 
+    end_game() #add disintigration functionality, to watch snake die :(
+
+#displays game over screen
 def end_game():
     font = pygame.font.SysFont(None, 40)
     screen = pygame.display.set_mode((650, 470))
@@ -137,6 +151,7 @@ def end_game():
     screen.blit(font.render("Game Over!", True, white), (160, 60))
     pygame.display.flip()
 
+    #interprets screen clicks allowing the user to restart the game, or exit the game depending on the button they click
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -145,13 +160,17 @@ def end_game():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
+
+                #restart button
                 if 10 < x < 320 and 410 < y < 460:
                     in_game()
 
+                #exit button
                 if 330 < x < 640 and 410 < y < 460:
                     pygame.quit()
                     quit()
 
+#inteprets the screen being clicked to start the game when the play button is clicked
 while True:
     pygame.display.flip()
     for event in pygame.event.get():
@@ -161,5 +180,7 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
+
+            #play button
             if 10 < x < 678 and 270 < y < 320:
                 in_game()

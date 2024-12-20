@@ -60,7 +60,7 @@ def in_game():
             tiles_row.append(0)
         tiles.append(tiles_row)
 
-    #keeps game at standstill until user presses an arrow key, initiating game
+    #keeps game at standstill until user presses the right arrow key, initiating game
     waiting = True
     while waiting:
         for event in pygame.event.get():

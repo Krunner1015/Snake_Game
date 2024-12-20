@@ -60,6 +60,45 @@ def in_game():
             tiles_row.append(0)
         tiles.append(tiles_row)
 
+    #keeps game at standstill until user presses an arrow key, initiating game
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game_over = True
+                pygame.quit()
+                quit()
+
+            #user can only initiate game by pressing right arrow key, moving towards the apple
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_RIGHT]:
+                direction = "RIGHT"
+                x_change = snake_block
+                y_change = 0
+                waiting = False
+
+        #initial screen
+        screen.fill(background)
+        display_score(snake_length - 2)
+
+        #draw the board
+        for row in range(15):
+            for col in range(20):
+                if (row + col) % 2 == 0:
+                    color = board_light
+                else:
+                    color = board_dark
+                pygame.draw.rect(screen, color, (col * snake_block, 40 + row * snake_block, snake_block, snake_block))
+
+        #draw the snake in starting position
+        draw_snake(snake_block, snake_list)
+
+        #draw the apple in starting position
+        screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
+
+        pygame.display.flip()
+        clock.tick(snake_speed)
+
     #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:
         for event in pygame.event.get():

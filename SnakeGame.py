@@ -13,7 +13,7 @@ snake = (76, 120, 232)
 width = 680
 height = 550
 snake_block = 34
-snake_speed = 10
+snake_speed = 9
 
 # Initialize window and start screen for game
 pygame.init()
@@ -47,10 +47,18 @@ def in_game():
     y_change = 0
     x_change = 0
     snake_pos = [204, 278]
-    snake_list = []
-    snake_length = 1
+    snake_list = [[204, 278],[170, 278]]
+    snake_length = 2
     apple_pos = [476, 278]
     direction = "RIGHT"
+
+    #initialize list to identify all tile positions as empty
+    tiles = []
+    for row in range(15):
+        tiles_row = []
+        for col in range(20):
+            tiles_row.append(0)
+        tiles.append(tiles_row)
 
     #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:
@@ -62,19 +70,19 @@ def in_game():
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT] and direction != "RIGHT":
-                x_change =- snake_block
+                x_change = -snake_block
                 y_change = 0
                 direction = "LEFT"
             elif keys[pygame.K_RIGHT] and direction != "LEFT":
-                x_change =+ snake_block
+                x_change = snake_block
                 y_change = 0
                 direction = "RIGHT"
             elif keys[pygame.K_UP] and direction != "DOWN":
-                y_change =- snake_block
+                y_change = -snake_block
                 x_change = 0
                 direction = "UP"
             elif keys[pygame.K_DOWN] and direction != "UP":
-                y_change =+ snake_block
+                y_change = snake_block
                 x_change = 0
                 direction = "DOWN"
 
@@ -82,9 +90,21 @@ def in_game():
         snake_pos[0] += x_change
         snake_pos[1] += y_change
 
+        #reset tiles list
+        for row in range(15):
+            for col in range(20):
+                tiles[row][col] = 0
+
+        #update the position of the snake in the tiles list
+        for segment in snake_list:
+            x, y = segment
+            tile_x = x//snake_block
+            tile_y = y//snake_block - 1
+            tiles[tile_y][tile_x] = 1 #mark of snake body
+
         #reinitiates the screen
         screen.fill(background)
-        display_score(snake_length - 1)
+        display_score(snake_length - 2)
 
         #draws the checkered board
         for row in range(15):
@@ -95,10 +115,16 @@ def in_game():
                     color = board_dark
                 pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
 
-
-        # for x in range(len(snake_list)):
-        #     if snake_list[x][0] == apple_pos[0] and snake_list[x][1] == apple_pos[1]:
-        #         apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
+        #increases the length of the snake and generates a new apple location when snake eats the apple
+        if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
+            valid = False
+            while not valid:
+                apple_pos = [random.choice(range(0, 647, snake_block)), random.choice(range(40, 517, snake_block))]
+                tile_x = apple_pos[0] // snake_block
+                tile_y = apple_pos[1] // snake_block - 1
+                if tiles[tile_y][tile_x] == 0:
+                    valid = True
+            snake_length += 1
 
         #displays the apple on the screen
         screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
@@ -117,16 +143,11 @@ def in_game():
                 game_over = True
                 break
 
-        #only displays the snake if it is within the board, otherwise the game ends (if the snake crashes into a wall)
+        #displays the snake if it is within the board, otherwise the game ends (if the snake crashes into a wall)
         if width > snake_pos[0] >= 0 and height > snake_pos[1] >= 40:
             draw_snake(snake_block, snake_list)
         else:
             break
-
-        #increases the length of the snake and generates a new apple location when snake eats the apple
-        if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
-            apple_pos = [random.choice(range(0, 681, snake_block)), random.choice(range(40, 551, snake_block))]
-            snake_length += 1
 
         pygame.display.flip()
 
@@ -139,14 +160,14 @@ def end_game():
     font = pygame.font.SysFont(None, 40)
     screen = pygame.display.set_mode((650, 470))
     screen.fill(board_light)
-    screen.blit(pygame.image.load("Snake.png"), (0, 0))
+    screen.blit(pygame.image.load("Game_over.png"), (0, 0))
     pygame.draw.rect(screen, snake, [10, 410, 310, 50], 0, 5)
     play_surf = font.render("Play again!", True, white)
     screen.blit(play_surf, play_surf.get_rect(center=(165, 435)))
     pygame.draw.rect(screen, snake, [330, 410, 310, 50], 0, 5)
     exit_surf = font.render("Exit", True, white)
     screen.blit(exit_surf, exit_surf.get_rect(center=(485, 435)))
-    display_score(snake_length - 1)
+    display_score(snake_length - 2)
     font = pygame.font.SysFont(None, 80)
     screen.blit(font.render("Game Over!", True, white), (160, 60))
     pygame.display.flip()

@@ -70,13 +70,13 @@ def in_game():
                 pygame.quit()
                 quit()
 
-            #user can only initiate game by pressing right arrow key, moving towards the apple
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_RIGHT]:
-                direction = "RIGHT"
-                x_change = snake_block
-                y_change = 0
-                waiting = False
+            #user can only initiate game by pressing right arrow key, moving towards the first apple
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    direction = "RIGHT"
+                    x_change = snake_block
+                    y_change = 0
+                    waiting = False
 
         #initial screen
         screen.fill(background)
@@ -206,18 +206,30 @@ def in_game():
 #displays game over screen
 def end_game():
     font = pygame.font.SysFont(None, 40)
+
+    #set screen
     screen = pygame.display.set_mode((650, 470))
     screen.fill(board_light)
     screen.blit(pygame.image.load("Game_over.png"), (0, 0))
+
+    #play again button
     pygame.draw.rect(screen, snake, [10, 410, 310, 50], 0, 5)
     play_surf = font.render("Play again!", True, white)
     screen.blit(play_surf, play_surf.get_rect(center=(165, 435)))
+
+    #exit button
     pygame.draw.rect(screen, snake, [330, 410, 310, 50], 0, 5)
     exit_surf = font.render("Exit", True, white)
     screen.blit(exit_surf, exit_surf.get_rect(center=(485, 435)))
-    display_score(snake_length - 2)
+
+    #score count displayed
+    font = pygame.font.SysFont(None, 60)
+    score_surf = font.render(f"Your Score: {snake_length - 2}", True, white)
+    screen.blit(score_surf, score_surf.get_rect(center=(325, 40)))
+
+    #game over displayed
     font = pygame.font.SysFont(None, 80)
-    screen.blit(font.render("Game Over!", True, white), (160, 60))
+    screen.blit(font.render("Game Over!", True, white), (160, 75))
     pygame.display.flip()
 
     #interprets screen clicks allowing the user to restart the game, or exit the game depending on the button they click

@@ -66,7 +66,6 @@ def in_game():
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                game_over = True
                 pygame.quit()
                 quit()
 
@@ -99,6 +98,11 @@ def in_game():
 
         pygame.display.flip()
         clock.tick(snake_speed)
+
+    snake_pos[0] += x_change
+    snake_list.append(list(snake_pos))
+    if len(snake_list) > snake_length:
+        del snake_list[0]
 
     #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:

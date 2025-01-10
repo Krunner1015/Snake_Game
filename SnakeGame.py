@@ -51,6 +51,7 @@ def in_game():
     snake_length = 2
     apple_pos = [476, 278]
     direction = "RIGHT"
+    next_direction = "RIGHT"
 
     #initialize list to identify all tile positions as empty
     tiles = []
@@ -107,23 +108,31 @@ def in_game():
                 pygame.quit()
                 quit()
 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT] and direction != "RIGHT":
-                x_change = -snake_block
-                y_change = 0
-                direction = "LEFT"
-            elif keys[pygame.K_RIGHT] and direction != "LEFT":
-                x_change = snake_block
-                y_change = 0
-                direction = "RIGHT"
-            elif keys[pygame.K_UP] and direction != "DOWN":
-                y_change = -snake_block
-                x_change = 0
-                direction = "UP"
-            elif keys[pygame.K_DOWN] and direction != "UP":
-                y_change = snake_block
-                x_change = 0
-                direction = "DOWN"
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT and direction != "RIGHT":
+                    next_direction = "LEFT"
+                elif event.key == pygame.K_RIGHT and direction != "LEFT":
+                    next_direction = "RIGHT"
+                elif event.key == pygame.K_UP and direction != "DOWN":
+                    next_direction = "UP"
+                elif event.key == pygame.K_DOWN and direction != "UP":
+                    next_direction = "DOWN"
+
+        #apple the next direction and update movement
+        if next_direction == "LEFT":
+            x_change = -snake_block
+            y_change = 0
+        elif next_direction == "RIGHT":
+            x_change = snake_block
+            y_change = 0
+        elif next_direction == "UP":
+            x_change = 0
+            y_change = -snake_block
+        elif next_direction == "DOWN":
+            x_change = 0
+            y_change = snake_block
+
+        direction = next_direction #commit to the new direction
 
         #moves the snake according the key presses defined above
         snake_pos[0] += x_change

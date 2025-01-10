@@ -2,31 +2,35 @@ import pygame
 import time
 import random
 
-# Initialize variables
+#initialize variables
 white = (255,255,255)
 black = (0,0,0)
+blue = (76, 120, 232)
 apple = pygame.image.load("apple.png")
 background = (87, 138, 52)
 board_light = (170, 215, 81)
 board_dark = (162, 209, 73)
-snake = (76, 120, 232)
 width = 680
 height = 550
 snake_block = 34
 snake_speed = 9
 
-# Initialize window and start screen for game
+snake_sprite = pygame.image.load("Snake_graphics.png")
+sprite_size = 64
+scale_factor = snake_block/sprite_size #scale sprite to match the grid
+
+#initialize window and start screen for game
 pygame.init()
 screen = pygame.display.set_mode((688, 330))
 pygame.display.set_caption("Snake Game")
 font = pygame.font.SysFont(None, 40)
 screen.fill(board_light)
 screen.blit(pygame.image.load("Snake_intro.png"), (0, 0))
-pygame.draw.rect(screen, snake, [10, 270, 668, 50], 0, 5)
+pygame.draw.rect(screen, blue, [10, 270, 668, 50], 0, 5)
 play_surf = font.render("Play", True, white)
 screen.blit(play_surf, play_surf.get_rect(center=(344, 295)))
 
-# Initialize clock for speed control of snake
+#initialize clock for speed control of snake
 clock = pygame.time.Clock()
 
 #displays the score in the top left of the screen
@@ -37,8 +41,61 @@ def display_score(score):
 
 #displays the snake on the screen
 def draw_snake(snake_block, snake_list):
-    for pos in snake_list:
-        pygame.draw.rect(screen, snake, [pos[0], pos[1], snake_block, snake_block])
+    for i, segment in enumerate(snake_list):
+        x = segment[0]
+        y = segment[1]
+        snake_pos_x = x
+        snake_pos_y = y
+
+        sprite_x, sprite_y = 0, 0 #initialize sprite coordinates
+
+        if i == 0: #head
+            next_segment = snake_list[i + 1] #next segment
+            if x > next_segment[0]: #right
+                sprite_x, sprite_y = 4, 0
+            elif x < next_segment[0]: #left
+                sprite_x, sprite_y = 3, 1
+            elif y < next_segment[1]: #up
+                sprite_x, sprite_y = 3, 0
+            elif y > next_segment[1]: #down
+                sprite_x, sprite_y = 4, 1
+
+        elif i == len(snake_list) - 1: #tail
+            last_segment = snake_list[i - 1] #previous segment
+            if last_segment[0] > x: #right
+                sprite_x, sprite_y = 4, 2
+            elif last_segment[0] < x: #left
+                sprite_x, sprite_y = 3, 3
+            elif last_segment[1] < y: #up
+                sprite_x, sprite_y = 3, 2
+            elif last_segment[1] > y: #down
+                sprite_x, sprite_y = 4, 3
+
+        else:  # Body
+            last_segment = snake_list[i - 1]  #previous segment
+            next_segment = snake_list[i + 1]  #next segment
+            if (last_segment[0] < x < next_segment[0]) or (next_segment[0] < x < last_segment[0]):  #horizontal
+                sprite_x, sprite_y = 1, 0
+            elif (last_segment[1] < y < next_segment[1]) or (next_segment[1] < y < last_segment[1]):  #vertical
+                sprite_x, sprite_y = 2, 1
+            elif (last_segment[0] < x and next_segment[1] > y) or (next_segment[0] < x and last_segment[1] > y):  #angle Left-Down
+                sprite_x, sprite_y = 2, 0
+            elif (last_segment[1] < y and next_segment[0] < x) or (next_segment[1] < y and last_segment[0] < x):  #angle Top-Left
+                sprite_x, sprite_y = 2, 2
+            elif (last_segment[0] > x and next_segment[1] < y) or (next_segment[0] > x and last_segment[1] < y):  #angle Right-Up
+                sprite_x, sprite_y = 0, 1
+            elif (last_segment[1] > y and next_segment[0] > x) or (next_segment[1] > y and last_segment[0] > x):  #angle Down-Right
+                sprite_x, sprite_y = 0, 0
+
+        #draw the segment
+        screen.blit(
+            pygame.transform.scale(
+                snake_sprite.subsurface(
+                    pygame.Rect(sprite_x * sprite_size, sprite_y * sprite_size, sprite_size, sprite_size)),
+                (snake_block, snake_block),
+            ),
+            (snake_pos_x, snake_pos_y),
+        )
 
 def in_game():
     global snake_length
@@ -47,8 +104,8 @@ def in_game():
     y_change = 0
     x_change = 0
     snake_pos = [204, 278]
-    snake_list = [[204, 278],[170, 278]]
-    snake_length = 2
+    snake_list = [[204, 278],[170, 278], [136, 278]]
+    snake_length = 3
     apple_pos = [476, 278]
     direction = "RIGHT"
     next_direction = "RIGHT"
@@ -79,7 +136,7 @@ def in_game():
 
         #initial screen
         screen.fill(background)
-        display_score(snake_length - 2)
+        display_score(snake_length - 3)
 
         #draw the board
         for row in range(15):
@@ -99,10 +156,8 @@ def in_game():
         pygame.display.flip()
         clock.tick(snake_speed)
 
-    snake_pos[0] += x_change
-    snake_list.append(list(snake_pos))
-    if len(snake_list) > snake_length:
-        del snake_list[0]
+    # snake_pos[0] += x_change
+    # snake_list.insert(0, list(snake_pos)) #insert the new head at front
 
     #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:
@@ -122,7 +177,7 @@ def in_game():
                 elif event.key == pygame.K_DOWN and direction != "UP":
                     next_direction = "DOWN"
 
-        #apple the next direction and update movement
+        #update direction and movement
         if next_direction == "LEFT":
             x_change = -snake_block
             y_change = 0
@@ -142,30 +197,9 @@ def in_game():
         snake_pos[0] += x_change
         snake_pos[1] += y_change
 
-        #reset tiles list
-        for row in range(15):
-            for col in range(20):
-                tiles[row][col] = 0
-
-        #update the position of the snake in the tiles list
-        for segment in snake_list:
-            x, y = segment
-            tile_x = x//snake_block
-            tile_y = y//snake_block - 1
-            tiles[tile_y][tile_x] = 1 #mark of snake body
-
-        #reinitiates the screen
-        screen.fill(background)
-        display_score(snake_length - 2)
-
-        #draws the checkered board
-        for row in range(15):
-            for col in range(20):
-                if (row + col) % 2 == 0:
-                    color = board_light
-                else:
-                    color = board_dark
-                pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
+        #adjusts snake list for new position
+        snake_head = [snake_pos[0], snake_pos[1]]
+        snake_list.insert(0, snake_head)
 
         #increases the length of the snake and generates a new apple location when snake eats the apple
         if snake_pos[0] == apple_pos[0] and snake_pos[1] == apple_pos[1]:
@@ -177,29 +211,51 @@ def in_game():
                 if tiles[tile_y][tile_x] == 0:
                     valid = True
             snake_length += 1
+        else:
+            # removes the tail if the snake did not eat an apple yet
+            if len(snake_list) > snake_length:
+                snake_list.pop()
 
-        #displays the apple on the screen
-        screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
+        #reset tiles list
+        for row in range(15):
+            for col in range(20):
+                tiles[row][col] = 0
 
-        #adjusts snake list for new position
-        snake_head = [snake_pos[0], snake_pos[1]]
-        snake_list.append(snake_head)
+        #update the position of the snake in the tiles list
+        for segment in snake_list:
+            x, y = segment
+            tile_x = x//snake_block - 1
+            tile_y = y//snake_block - 2
+            tiles[tile_y][tile_x] = 1 #mark of snake body
 
-        #removes the duplicate snake positions if the snake has not increased in size
-        if len(snake_list) > snake_length:
-            del snake_list[0]
+        #reinitiates the screen
+        screen.fill(background)
+        display_score(snake_length - 3)
 
-        #ends game if snake collides with itself
-        for x in snake_list[:-1]:
-            if x == snake_head:
-                game_over = True
-                break
+        #draws the checkered board
+        for row in range(15):
+            for col in range(20):
+                if (row + col) % 2 == 0:
+                    color = board_light
+                else:
+                    color = board_dark
+                pygame.draw.rect(screen, color, (col * 34, 40 + row * 34, 34, 34))
 
         #displays the snake if it is within the board, otherwise the game ends (if the snake crashes into a wall)
         if width > snake_pos[0] >= 0 and height > snake_pos[1] >= 40:
             draw_snake(snake_block, snake_list)
         else:
             break
+
+        #displays the apple on the screen
+        screen.blit(apple, apple.get_rect(topleft=(apple_pos[0], apple_pos[1])))
+
+        #ends game if snake collides with itself
+        for x in snake_list[1:]:
+            if x == snake_head:
+                print("collision")
+                game_over = True
+                break
 
         pygame.display.flip()
 
@@ -217,18 +273,18 @@ def end_game():
     screen.blit(pygame.image.load("Game_over.png"), (0, 0))
 
     #play again button
-    pygame.draw.rect(screen, snake, [10, 410, 310, 50], 0, 5)
+    pygame.draw.rect(screen, blue, [10, 410, 310, 50], 0, 5)
     play_surf = font.render("Play again!", True, white)
     screen.blit(play_surf, play_surf.get_rect(center=(165, 435)))
 
     #exit button
-    pygame.draw.rect(screen, snake, [330, 410, 310, 50], 0, 5)
+    pygame.draw.rect(screen, blue, [330, 410, 310, 50], 0, 5)
     exit_surf = font.render("Exit", True, white)
     screen.blit(exit_surf, exit_surf.get_rect(center=(485, 435)))
 
     #score count displayed
     font = pygame.font.SysFont(None, 60)
-    score_surf = font.render(f"Your Score: {snake_length - 2}", True, white)
+    score_surf = font.render(f"Your Score: {snake_length - 3}", True, white)
     screen.blit(score_surf, score_surf.get_rect(center=(325, 40)))
 
     #game over displayed

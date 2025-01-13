@@ -156,9 +156,6 @@ def in_game():
         pygame.display.flip()
         clock.tick(snake_speed)
 
-    # snake_pos[0] += x_change
-    # snake_list.insert(0, list(snake_pos)) #insert the new head at front
-
     #interprets the key pressing making sure the user cannot make the snake turn back on itself
     while not game_over:
         for event in pygame.event.get():
@@ -177,21 +174,21 @@ def in_game():
                 elif event.key == pygame.K_DOWN and direction != "UP":
                     next_direction = "DOWN"
 
+        direction = next_direction #commit to the new direction
+
         #update direction and movement
-        if next_direction == "LEFT":
+        if direction == "LEFT":
             x_change = -snake_block
             y_change = 0
-        elif next_direction == "RIGHT":
+        elif direction == "RIGHT":
             x_change = snake_block
             y_change = 0
-        elif next_direction == "UP":
+        elif direction == "UP":
             x_change = 0
             y_change = -snake_block
-        elif next_direction == "DOWN":
+        elif direction == "DOWN":
             x_change = 0
             y_change = snake_block
-
-        direction = next_direction #commit to the new direction
 
         #moves the snake according the key presses defined above
         snake_pos[0] += x_change
